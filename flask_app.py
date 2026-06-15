@@ -4,6 +4,9 @@
 import telebot
 from telebot import types
 from flask import Flask, request
+import logging
+
+telebot.logger.setLevel(logging.DEBUG)
 
 # ====== НАСТРОЙКИ ======
 
