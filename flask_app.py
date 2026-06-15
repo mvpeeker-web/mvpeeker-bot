@@ -268,13 +268,14 @@ def help_cmd(message):
 
 @app.route("/" + BOT_TOKEN, methods=["POST"])
 def webhook():
+    json_string = request.get_data().decode("utf-8")
+    print("INCOMING UPDATE:", json_string, flush=True)
     try:
-        json_string = request.get_data().decode("utf-8")
         update = telebot.types.Update.de_json(json_string)
         bot.process_new_updates([update])
     except Exception as e:
         import traceback
-        print("ERROR IN WEBHOOK:", e)
+        print("ERROR IN WEBHOOK:", e, flush=True)
         traceback.print_exc()
     return "OK", 200
 
