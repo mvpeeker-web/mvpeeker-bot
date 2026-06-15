@@ -73,6 +73,15 @@ def payment_keyboard(name):
     return kb
 
 
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def debug_any_message(message):
+    print("DEBUG HANDLER TRIGGERED:", message.text, flush=True)
+    if message.text == "/start":
+        bot.send_message(message.chat.id, WELCOME_TEXT, parse_mode="Markdown", reply_markup=plans_keyboard())
+    else:
+        bot.send_message(message.chat.id, f"Получено: {message.text}")
+
+
 @bot.message_handler(commands=["start"])
 def start(message):
     bot.send_message(message.chat.id, WELCOME_TEXT, parse_mode="Markdown", reply_markup=plans_keyboard())
