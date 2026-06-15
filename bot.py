@@ -1,14 +1,17 @@
-# mvpeeker shop bot
-# Бот-каталог подписок mvpeeker.
+# mvpeeker shop bot - версия для PythonAnywhere (Flask + webhook)
 # Stars - автооплата через Telegram, DonationAlerts/СБП - ручное подтверждение продавцом.
 
 import telebot
 from telebot import types
+from flask import Flask, request
 
 # ====== НАСТРОЙКИ ======
 
 BOT_TOKEN = "8655420363:AAHfNpLyQyhzHtBh3gODCH51OL0i1bvovOk"
 ADMIN_ID = 8230465825  # твой Telegram ID - сюда приходят уведомления о заявках
+
+# Адрес твоего приложения на PythonAnywhere (без слэша на конце)
+WEBHOOK_HOST = "https://mvpeeker-bot.onrender.com"
 
 DONATE_URL = "https://www.donationalerts.com/r/mvpeeker"
 TELEGRAM_URL = "https://t.me/mvpeeker"
@@ -38,6 +41,7 @@ WELCOME_TEXT = (
 # ====== БОТ ======
 
 bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
 
 
 def plans_keyboard():
@@ -260,6 +264,29 @@ def help_cmd(message):
     )
 
 
+# ====== FLASK / WEBHOOK ======
+
+@app.route("/" + BOT_TOKEN, methods=["POST"])
+def webhook():
+    json_string = request.get_data().decode("utf-8")
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "OK", 200
+
+
+@app.route("/")
+def index():
+    return "mvpeeker bot is running", 200
+
+
+@app.route("/set_webhook")
+def set_webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{WEBHOOK_HOST}/{BOT_TOKEN}")
+    return "Webhook set!", 200
+
+
 if __name__ == "__main__":
-    print("Бот запущен...")
-    bot.infinity_polling()
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
