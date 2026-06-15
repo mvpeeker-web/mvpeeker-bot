@@ -299,14 +299,29 @@ def webhook():
 
         elif update.callback_query:
             cq = update.callback_query
-            print("MANUAL HANDLE callback:", cq.data, flush=True)
-            bot.process_new_updates([update])
+            data = cq.data
+            print("MANUAL HANDLE callback:", data, flush=True)
+
+            if data == "back":
+                on_back(cq)
+            elif data.startswith("plan|"):
+                on_plan_chosen(cq)
+            elif data.startswith("pay_stars|"):
+                on_pay_stars(cq)
+            elif data.startswith("pay_sbp|"):
+                on_pay_sbp(cq)
+            elif data.startswith("pay_donate|"):
+                on_pay_donate(cq)
+            elif data.startswith("confirm|"):
+                on_confirm(cq)
+            else:
+                bot.answer_callback_query(cq.id, "Неизвестная команда")
 
         elif update.message and update.message.successful_payment:
-            bot.process_new_updates([update])
+            got_payment(update.message)
 
         elif update.pre_checkout_query:
-            bot.process_new_updates([update])
+            checkout(update.pre_checkout_query)
 
     except Exception as e:
         import traceback
