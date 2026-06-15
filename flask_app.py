@@ -284,7 +284,30 @@ def webhook():
     print("INCOMING UPDATE:", json_string, flush=True)
     try:
         update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
+
+        if update.message and update.message.text:
+            text = update.message.text
+            chat_id = update.message.chat.id
+            print("MANUAL HANDLE message text:", text, flush=True)
+
+            if text == "/start":
+                bot.send_message(chat_id, WELCOME_TEXT, parse_mode="Markdown", reply_markup=plans_keyboard())
+            elif text == "/help":
+                bot.send_message(chat_id, f"/start \u2014 показать тарифы\nПоддержка: {TELEGRAM_URL}")
+            else:
+                bot.send_message(chat_id, f"Команда не распознана: {text}")
+
+        elif update.callback_query:
+            cq = update.callback_query
+            print("MANUAL HANDLE callback:", cq.data, flush=True)
+            bot.process_new_updates([update])
+
+        elif update.message and update.message.successful_payment:
+            bot.process_new_updates([update])
+
+        elif update.pre_checkout_query:
+            bot.process_new_updates([update])
+
     except Exception as e:
         import traceback
         print("ERROR IN WEBHOOK:", e, flush=True)
